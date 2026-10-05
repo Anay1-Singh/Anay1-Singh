@@ -1,0 +1,97 @@
+name: Update profile visuals
+
+on:
+  schedule:
+    - cron: "30 0 * * *" # Daily at 00:30 UTC / 06:00 IST.
+  workflow_dispatch:
+  push:
+    branches-ignore:
+      - output
+    paths:
+      - .github/workflows/profile-visuals.yml
+
+permissions: {}
+
+concurrency:
+  group: profile-visuals
+  cancel-in-progress: false
+
+jobs:
+  generate-and-publish:
+    # Supports any default branch name and prevents publishing from other branches.
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+
+    steps:
+      - name: Generate GitHub activity card
+        uses: stats-organization/github-readme-stats-action@2c498845f71017821efaad14293ebc736156ef21 # v2.1.0
+        with:
+          card: stats
+          path: dist/stats.svg
+          token: ${{ secrets.GITHUB_TOKEN }}
+          core_version: 2.2.1
+          fail_on_error: true
+          options: >-
+            {"username":"${{ github.repository_owner }}","custom_title":"GitHub activity","hide_rank":true,"show_icons":false,"card_width":400,"bg_color":"0D1117","border_color":"30363D","title_color":"F0F6FC","text_color":"B1BAC4","icon_color":"8EA4B8","border_radius":4,"disable_animations":true}
+
+      - name: Generate top languages card
+        uses: stats-organization/github-readme-stats-action@2c498845f71017821efaad14293ebc736156ef21 # v2.1.0
+        with:
+          card: top-langs
+          path: dist/top-langs.svg
+          token: ${{ secrets.GITHUB_TOKEN }}
+          core_version: 2.2.1
+          fail_on_error: true
+          options: >-
+            {"username":"${{ github.repository_owner }}","custom_title":"Most used languages","layout":"compact","langs_count":6,"hide_progress":true,"card_width":400,"bg_color":"0D1117","border_color":"30363D","title_color":"F0F6FC","text_color":"B1BAC4","icon_color":"8EA4B8","border_radius":4,"disable_animations":true}
+
+      - name: Generate contribution snake
+        uses: Platane/snk/svg-only@d8f6715049803e982ee5ff501b6b9b7d5deeb09b # v3.5.0
+        with:
+          github_user_name: ${{ github.repository_owner }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          outputs: |
+            dist/github-snake.svg?color_snake=%23526C82&color_dots=%23EBEDF0,%23CDD2D8,%23A6AEB8,%2376808C,%2348505C
+            dist/github-snake-dark.svg?palette=github-dark&color_snake=%238EA4B8&color_dots=%23161B22,%2330363D,%23484F58,%236E7681,%23B1BAC4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Apply restrained language colors and validate SVGs
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+
+          namespace = "http://www.w3.org/2000/svg"
+          ET.register_namespace("", namespace)
+          ET.register_namespace("xlink", "http://www.w3.org/1999/xlink")
+          language_card = Path("dist/top-langs.svg")
+          tree = ET.parse(language_card)
+          for circle in tree.iter(f"{{{namespace}}}circle"):
+              circle.set("fill", "#8EA4B8")
+          tree.write(language_card, encoding="utf-8", xml_declaration=False)
+
+          for filename in (
+              "stats.svg", "top-langs.svg",
+              "github-snake.svg", "github-snake-dark.svg",
+          ):
+              root = ET.parse(Path("dist") / filename).getroot()
+              if root.tag != f"{{{namespace}}}svg":
+                  raise ValueError(f"Invalid SVG: {filename}")
+          PY
+
+      - name: Publish visuals to output branch
+        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: output
+          publish_dir: ./dist
+          keep_files: true
+          allow_empty_commit: false
+          user_name: github-actions[bot]
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          commit_message: "chore: update profile visuals"
