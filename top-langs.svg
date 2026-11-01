@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="115" viewBox="0 0 400 115" fill="none" role="img" aria-labelledby="descId">
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="140" viewBox="0 0 400 140" fill="none" role="img" aria-labelledby="descId">
         <title id="titleId" />
         <desc id="descId" />
         <style>
@@ -110,21 +110,28 @@
     <g class="stagger" style="animation-delay: 600ms">
       <circle cx="5" cy="6" r="5" fill="#8EA4B8" />
       <text data-testid="lang-name" x="15" y="10" class="lang-name">
-        Python 
+        TypeScript 
+      </text>
+    </g>
+  </g><g transform="translate(0, 50)">
+    <g class="stagger" style="animation-delay: 750ms">
+      <circle cx="5" cy="6" r="5" fill="#8EA4B8" />
+      <text data-testid="lang-name" x="15" y="10" class="lang-name">
+        CSS 
       </text>
     </g>
   </g></g><g transform="translate(150, 0)"><g transform="translate(0, 0)">
     <g class="stagger" style="animation-delay: 450ms">
       <circle cx="5" cy="6" r="5" fill="#8EA4B8" />
       <text data-testid="lang-name" x="15" y="10" class="lang-name">
-        HTML 
+        Python 
       </text>
     </g>
   </g><g transform="translate(0, 25)">
     <g class="stagger" style="animation-delay: 600ms">
       <circle cx="5" cy="6" r="5" fill="#8EA4B8" />
       <text data-testid="lang-name" x="15" y="10" class="lang-name">
-        CSS 
+        HTML 
       </text>
     </g>
   </g></g>
